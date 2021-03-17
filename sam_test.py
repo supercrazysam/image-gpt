@@ -80,9 +80,9 @@ def color_quantize_np(x, clusters):
 #os.system("curl https://i.imgur.com/vF56Fsib.jpg > kp.jpg")
 #image_paths = ["kp.jpg"]*(n_gpu*n_sub_batch)
 
-os.system("curl https://github.com/supercrazysam/image-gpt/blob/master/test1.png > kp.png")
-#os.system("curl https://github.com/supercrazysam/image-gpt/blob/master/test2.png > kp.png")
-#os.system("curl https://github.com/supercrazysam/image-gpt/blob/master/test3.png > kp.png")
+os.system("curl https://imgur.com/CT9g3qp.png > kp.png")
+#os.system("curl https://imgur.com/7VwPbII.png > kp.png")
+#os.system("curl https://imgur.com/y3p2zpq.png > kp.png")
 image_paths = ["kp.png"]*(n_gpu*n_sub_batch)
 
 
