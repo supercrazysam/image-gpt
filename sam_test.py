@@ -37,7 +37,7 @@ print(__file__)
 model_sizes = ["s", "m", "l"] #small medium large, xl not available
 model_sizes = ["s"] #"s" #actually just download one
 n_sub_batch = 8 #8 is default, trying lowering if this doesn't work.
-n_px = 32
+n_px = 32 #resolution?
 n_gpu = 1
 
 
@@ -120,7 +120,7 @@ x_norm = normalize_img(x) #normalize pixels values to -1 to +1
 
 samples = color_quantize_np(x_norm,clusters).reshape(x_norm.shape[:-1]) #map pixels to closest color cluster
 
-n_px_crop = 8
+n_px_crop = int(n_px/2) #half #8
 primers = samples.reshape(-1,n_px*n_px)[:,:n_px_crop*n_px] # crop top n_px_crop rows
 
 # Commented out IPython magic to ensure Python compatibility.
