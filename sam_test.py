@@ -19,40 +19,29 @@ Notebook modified to include conditional input by [Alfredo Peguero](https://twit
 # Download Image-GPT
 """
 
-#!nvidia-smi #OpenAI says you need 16GB GPU for the large model, but it may work if you lower n_sub_batch on the others.
+!nvidia-smi #OpenAI says you need 16GB GPU for the large model, but it may work if you lower n_sub_batch on the others.
 
-#!git clone https://github.com/openai/image-gpt.git
-#!pip install tensorflow-gpu==1.15.0
+!git clone https://github.com/openai/image-gpt.git
+!pip install tensorflow-gpu==1.15.0
 
 # Commented out IPython magic to ensure Python compatibility.
 # %cd /content/image-gpt
 
-
-import os
-##path = os.path.dirname(__file__)
-print(__file__)
-###os.chdir(path)
-
-
 model_sizes = ["s", "m", "l"] #small medium large, xl not available
 model_sizes = ["s"] #"s" #actually just download one
 n_sub_batch = 8 #8 is default, trying lowering if this doesn't work.
-n_px = 32 #resolution?
+n_px = 32 #32
 n_gpu = 1
 
-
-
-
-#if already downloaded can skip this
-
-os.system("mkdir -p models")
-os.system("mkdir -p clusters")
-os.system("mkdir -p datasets")
+!mkdir -p /content/image-gpt/models
+!mkdir -p /content/image-gpt/clusters
+!mkdir -p /content/image-gpt/datasets
 
 for model_size in model_sizes:
-    os.system("mkdir -p models/"+str(model_size)+"")
-    os.system("python download.py --model "+str(model_size)+" --ckpt 1000000 --download_dir models/"+str(model_size)) #models
-    os.system("python download.py --clusters --download_dir clusters/"+str(model_size)) #color clusters
+    !mkdir -p ./models/{model_size}
+    !python download.py --model {model_size} --ckpt 1000000 --download_dir ./models/{model_size} #models
+    #!python download.py --dataset imagenet --download_dir ./datasets/{model_size} #dataset
+    !python download.py --clusters --download_dir ./clusters/{model_size} #color clusters
 
 model_size = "s"
 
@@ -76,12 +65,12 @@ def color_quantize_np(x, clusters):
     return np.argmin(d,axis=1)
 
 #get images
-#example image
-#os.system("curl https://i.imgur.com/vF56Fsib.jpg > kp.jpg")
-#image_paths = ["kp.jpg"]*(n_gpu*n_sub_batch)
+#!curl https://i.imgur.com/vF56Fsib.jpg > kp.jpg
 
-
-image_paths = ["test1.png"]*(n_gpu*n_sub_batch)
+!curl https://github.com/supercrazysam/image-gpt/blob/master/test1.png > kp.png
+#!curl https://github.com/supercrazysam/image-gpt/blob/master/test2.png > kp.png
+#!curl https://github.com/supercrazysam/image-gpt/blob/master/test3.png > kp.png
+image_paths = ["kp.png"]*(n_gpu*n_sub_batch)
 
 #Resize original images to n_px by n_px
 import cv2
@@ -114,13 +103,13 @@ for img in x:
 
 #use Image-GPT color palette and crop images
 
-color_cluster_path = "clusters/"+str(model_size)+"/kmeans_centers.npy"
+color_cluster_path = "/content/image-gpt/clusters/%s/kmeans_centers.npy"%(model_size)
 clusters = np.load(color_cluster_path) #get color clusters
 x_norm = normalize_img(x) #normalize pixels values to -1 to +1
 
 samples = color_quantize_np(x_norm,clusters).reshape(x_norm.shape[:-1]) #map pixels to closest color cluster
 
-n_px_crop = int(n_px/2) #half #8
+n_px_crop = int(n_px/2) #8
 primers = samples.reshape(-1,n_px*n_px)[:,:n_px_crop*n_px] # crop top n_px_crop rows
 
 # Commented out IPython magic to ensure Python compatibility.
@@ -368,8 +357,8 @@ MODELS={"l":(1536,16,48),"m":(1024,8,36),"s":(512,8,24) }
 n_embd,n_head,n_layer=MODELS[model_size]
 
 sys.argv="""src/run.py  --sample --n_embd %d --n_head %d --n_layer %d
---ckpt_path models/%s/model.ckpt-1000000 --color_cluster_path clusters/%s/kmeans_centers.npy 
---data_path datasets/s/imagenet_notused --save_dir output 
+--ckpt_path /content/image-gpt/models/%s/model.ckpt-1000000 --color_cluster_path /content/image-gpt/clusters/%s/kmeans_centers.npy 
+--data_path /content/image-gpt/datasets/s/imagenet_notused --save_dir /content/image-gpt/output 
 --n_gpu %d --n_px %d --n_sub_batch %d --seed 42"""%(n_embd,n_head,n_layer,model_size,model_size,n_gpu,n_px,n_sub_batch)
 
 sys.argv=sys.argv.split()
@@ -387,9 +376,9 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import glob
 
-samples = pathlib.Path('output').glob('*.png')
+samples = pathlib.Path('/content/image-gpt/output').glob('*.png')
 
-f, axarr = plt.subplots(1,len(glob.glob('output/*.png')),dpi=180)
+f, axarr = plt.subplots(1,len(glob.glob('/content/image-gpt/output/*.png')),dpi=180)
 
 i = 0
 for image in samples:
